@@ -1,0 +1,7 @@
+[
+  {"cost_name": "Leasing", "amount": 3000.0},
+  {"cost_name": "Insurance", "amount": 500.0},
+  {"cost_name": "Maintenance", "amount": 500.0},
+  {"cost_name": "Driver Salary", "amount": 7000.0},
+  {"cost_name": "Unforeseen Costs", "amount": 500.0}
+]

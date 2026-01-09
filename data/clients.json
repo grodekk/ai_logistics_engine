@@ -1,0 +1,16 @@
+[
+  {
+    "client_name": "Alpha cars",
+    "client_class": "A",
+    "avg_payment_delay_days": 5,
+    "late_payment_count": 2,
+    "total_shipments": 15
+  },
+  {
+    "client_name": "Beta books",
+    "client_class": "B",
+    "avg_payment_delay_days": 15,
+    "late_payment_count": 7,
+    "total_shipments": 22
+  }
+]

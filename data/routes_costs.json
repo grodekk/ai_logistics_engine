@@ -1,0 +1,35 @@
+[
+  {
+    "route_name": "Warsaw - Berlin",
+    "fuel": 3000,
+    "tolls": 500,
+    "ferry": 500,
+    "hotel": 7000
+  },
+  {
+    "route_name": "Berlin - Paris",
+    "fuel": 2500,
+    "tolls": 400,
+    "hotel": 6000
+  },
+  {
+    "route_name": "Paris - London",
+    "fuel": 2000,
+    "tolls": 300,
+    "hotel": 5000
+  },
+  {
+    "route_name": "London - Copenhagen",
+    "fuel": 3500,
+    "tolls": 600,
+    "ferry": 800,
+    "hotel": 6500
+  },
+  {
+    "route_name": "Copenhagen - Warsaw",
+    "fuel": 4000,
+    "tolls": 700,
+    "ferry": 900,
+    "hotel": 7500
+  }
+]
