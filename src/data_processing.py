@@ -5,14 +5,38 @@ class DataProcessing:
         self.db = db_service
 
     def get_monthly_costs(self):
-        rows = self.db.fetch_all("SELECT cost_name, amount FROM monthly_costs")
+        query = """
+        SELECT cost_name, amount
+        FROM monthly_costs
+        """
+        rows = self.db.fetch_all(query)
         df = pd.DataFrame(rows, columns=["cost_name", "amount"])
         return self._cast_columns_to_float(df, ["amount"])
 
     def get_routes_costs(self):
-        rows = self.db.fetch_all("SELECT route_name, fuel, tolls, ferry, hotel FROM routes_costs")
+        query = """
+        SELECT route_name, fuel, tolls, ferry, hotel
+        FROM routes_costs
+        """
+        rows = self.db.fetch_all(query)
         df = pd.DataFrame(rows, columns=["route_name", "fuel", "tolls", "ferry", "hotel"])
         return self._cast_columns_to_float(df, ["fuel", "tolls", "ferry", "hotel"])
+
+    def get_clients(self):
+        query = """
+        SELECT client_name,
+               avg_payment_delay_days,
+               late_payment_count,
+               client_class
+        FROM clients
+        """
+        rows = self.db.fetch_all(query)
+        df = pd.DataFrame(
+            rows,
+            columns=["client_name", "avg_payment_delay_days", "late_payment_count", "client_class"]
+        )
+        df = self._cast_columns_to_float(df, ["avg_payment_delay_days", "late_payment_count"])
+        return df
 
     @staticmethod
     def _cast_columns_to_float(df, columns):
