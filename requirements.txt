@@ -1,0 +1,8 @@
+pandas==2.1.1
+psycopg2-binary==2.9.9
+pytest==8.0.1
+python-dotenv==1.0.0
+
+# Optional: FastAPI and ASGI server for future REST API
+fastapi==0.111.0
+uvicorn[standard]==0.24.0
