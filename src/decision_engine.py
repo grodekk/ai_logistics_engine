@@ -5,7 +5,7 @@ class DecisionEngine:
         self.dp = data_processing
 
     def calculate_rates_for_routes(self, routes_info, monthly_profit_target):
-        df = pd.DataFrame(routes_info)
+        df = self._prepare_routes_dataframe(routes_info)
         df = self._merge_route_costs(df)
         self._validate_routes(df)
 
@@ -63,3 +63,9 @@ class DecisionEngine:
     @staticmethod
     def _calculate_average_rate(df, total_trips):
         return (df["required_rate_per_trip"] * df["monthly_trips"]).sum() / total_trips
+
+    @staticmethod
+    def _prepare_routes_dataframe(routes_info):
+        df = pd.DataFrame(routes_info)
+        df = df.groupby('route_name', as_index=False).agg({'monthly_trips': 'sum'})
+        return df
