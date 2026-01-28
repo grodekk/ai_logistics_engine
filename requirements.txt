@@ -2,7 +2,6 @@ pandas
 numpy
 psycopg2-binary
 pytest
-
-# Optional: FastAPI and ASGI server for future REST API
 fastapi
+pydantic
 uvicorn[standard]
