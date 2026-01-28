@@ -27,15 +27,20 @@ class DataProcessing:
         SELECT client_name,
                avg_payment_delay_days,
                late_payment_count,
-               client_class
+               client_class,
+               total_shipments
         FROM clients
         """
         rows = self.db.fetch_all(query)
         df = pd.DataFrame(
             rows,
-            columns=["client_name", "avg_payment_delay_days", "late_payment_count", "client_class"]
+            columns=["client_name", "avg_payment_delay_days", "late_payment_count", "client_class", "total_shipments"]
         )
-        df = self._cast_columns_to_float(df, ["avg_payment_delay_days", "late_payment_count"])
+        df = self._cast_columns_to_float(df, [
+                                              "avg_payment_delay_days",
+                                              "late_payment_count",
+                                              "total_shipments"
+        ])
         return df
 
     @staticmethod
