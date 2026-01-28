@@ -16,16 +16,23 @@ class DecisionEngine:
 
         overhead_per_trip = self._calculate_overhead_per_trip(total_monthly_costs, monthly_profit_target, total_trips)
         df["required_rate_per_trip"] = self._calculate_required_rate(df, overhead_per_trip)
+        df["required_rate_per_trip"] = df["required_rate_per_trip"].round(0)
 
         avg_rate = self._calculate_average_rate(df, total_trips)
+        avg_rate = round(avg_rate, 0)
 
-        return (
-            df[["route_name", "monthly_trips", "total_route_cost", "required_rate_per_trip"]],
-            avg_rate,
-            total_monthly_costs,
-            total_route_costs,
-            total_trips
-        )
+        return {
+            "df": df[[
+                "route_name",
+                "monthly_trips",
+                "total_route_cost",
+                "required_rate_per_trip"
+            ]],
+            "avg_rate": avg_rate,
+            "total_monthly_costs": total_monthly_costs,
+            "total_route_costs": total_route_costs,
+            "total_trips": total_trips
+        }
 
     def _merge_route_costs(self, df):
         df_routes = self.dp.get_routes_costs()
