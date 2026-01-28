@@ -19,17 +19,17 @@ def main():
 
         monthly_profit_target = 10000
 
-        df_result, avg_rate, monthly_costs, route_costs, total_trips = engine.calculate_rates_for_routes(
+        result = engine.calculate_rates_for_routes(
             routes_info=routes_info,
             monthly_profit_target=monthly_profit_target
         )
 
         print("\n=== SHADOW TEST: DecisionEngine ===\n")
-        print(df_result)
-        print(f"\nTotal trips: {total_trips}")
-        print(f"Total route costs: {route_costs:.2f}")
-        print(f"Total monthly costs: {monthly_costs:.2f}")
-        print(f"Average required rate per trip: {avg_rate:.2f}")
+        print(result["df"])
+        print(f"\nTotal trips: {result['total_trips']}")
+        print(f"Total route costs: {result['total_route_costs']:.2f}")
+        print(f"Total monthly costs: {result['total_monthly_costs']:.2f}")
+        print(f"Average required rate per trip: {result['avg_rate']:.2f}")
         print("\n=================================\n")
 
     finally:
