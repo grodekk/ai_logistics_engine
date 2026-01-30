@@ -1,5 +1,5 @@
 import os
-import json
+from src.json_loader import JsonLoader
 import logging
 import psycopg2
 from psycopg2 import sql
@@ -116,8 +116,8 @@ class DatabaseService:
 
     def load_json(self, filepath, table, columns):
         try:
-            full_path = self.build_fullpath(filepath)
-            data = self.read_json(full_path)
+            full_path = str(self.build_fullpath(filepath))
+            data = JsonLoader(full_path).load()
             values = self.prepare_values(data, columns)
 
             self.bulk_insert(table, columns, values)
@@ -132,20 +132,6 @@ class DatabaseService:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         full_path = os.path.join(base_dir, filepath)
         return full_path
-
-
-    @staticmethod
-    def read_json(full_path):
-        with open(full_path, encoding='utf-8') as f:
-            data = json.load(f)
-
-        if not isinstance(data, list):
-            raise ValueError(f"{full_path} must be a list of objects")
-
-        if not data:
-            raise ValueError("File is empty")
-
-        return data
 
 
     @staticmethod
