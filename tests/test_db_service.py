@@ -100,12 +100,12 @@ def test_bulk_insert_exception(db):
     db.conn.rollback.assert_called_once()
 
 
-# ---------- LOAD_JSON ---------- #
+# ---------- insert_json_into_table ---------- #
 
-def test_load_json_raises_exception(db):
+def test_insert_json_into_table_raises_exception(db):
     with patch.object(db, 'read_json', side_effect=ValueError("Bad file")):
         with pytest.raises(ValueError, match="Bad file"):
-            db.load_json("dummy.json", "table", ["col"])
+            db.insert_json_into_table("dummy.json", "table", ["col"])
 
 
 # ---------- READ_JSON ---------- #
