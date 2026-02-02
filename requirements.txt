@@ -5,3 +5,4 @@ pytest
 fastapi
 pydantic
 uvicorn[standard]
+starlette==0.31.1
