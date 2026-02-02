@@ -1,20 +1,38 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from fastapi.responses import JSONResponse
+from fastapi import Request
+from pydantic import BaseModel, conint
 from typing import List
-import logging
-
+from contextlib import asynccontextmanager
 from src.db_service import DatabaseService
 from src.config import Config
 from src.data_processing import DataProcessing
 from src.decision_engine import DecisionEngine
 from src.predictive_engine import PredictiveEngine
+from src.exceptions import InfrastructureError, BusinessLogicError
+import logging
 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="AI Logistics Engine", version="0.1")
+
+db = DatabaseService(Config())
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    try:
+        db.connect()
+        logger.info("Database connected")
+        yield
+    finally:
+        db.disconnect()
+        logger.info("Database disconnected")
+
+
+app = FastAPI(title="AI Logistics Engine", version="0.1", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,16 +42,16 @@ app.add_middleware(
 )
 
 
-db = DatabaseService(Config())
-db.connect()
 dp = DataProcessing(db)
 decision_engine = DecisionEngine(dp)
 predictive_engine = PredictiveEngine(dp)
 
 
+# --- Models ---
+
 class RouteInput(BaseModel):
     route_name: str
-    monthly_trips: int
+    monthly_trips: conint(gt=0, le=10000)
 
 
 class RouteRateResponse(BaseModel):
@@ -64,21 +82,37 @@ class ClientScoreResponse(BaseModel):
     score: float
 
 
-@app.get("/", tags=["Health"])
-async def root():
+# --- Exception Handlers ---
+
+@app.exception_handler(InfrastructureError)
+async def infra_error_handler(_: Request, exc: InfrastructureError):
+    logger.error(f"[{exc.error_id}] {exc.message}", exc_info=True)
+    return JSONResponse(
+        status_code=503,
+        content=exc.to_dict()
+    )
+
+@app.exception_handler(BusinessLogicError)
+async def business_error_handler(_: Request, exc: BusinessLogicError):
+    logger.warning(f"[{exc.error_id}] {exc.message}")
+    return JSONResponse(
+        status_code=400,
+        content=exc.to_dict()
+    )
+
+
+# --- Endpoints ---
+
+@app.get("/health", tags=["Health"])
+async def health_check():
     return {"status": "ok", "service": "AI Logistics Engine"}
 
 
 @app.get("/routes/available", tags=["Routes"])
 async def get_available_routes():
-    try:
-        df = dp.get_routes_costs()
-        routes = df['route_name'].unique().tolist()
-        return {"routes": routes}
-
-    except Exception as e:
-        logger.error(f"Error getting routes: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+    df = dp.get_routes_costs()
+    routes = df['route_name'].unique().tolist()
+    return {"routes": routes}
 
 
 @app.post("/decision/rates", response_model=RatesResponse, tags=["Decision Engine"])
@@ -86,41 +120,33 @@ async def calculate_route_rates(
         routes: List[RouteInput],
         monthly_profit_target: float
 ):
+    result = decision_engine.calculate_rates_for_routes(
+        routes_info=[r.model_dump() for r in routes],
+        monthly_profit_target=monthly_profit_target
+    )
 
-    try:
-        result = decision_engine.calculate_rates_for_routes(
-            routes_info=[r.model_dump() for r in routes],
-            monthly_profit_target=monthly_profit_target
+    df = result["df"]
+
+    routes_resp = [
+        RouteRateResponse(**row)
+        for row in df.to_dict(orient="records")
+    ]
+
+    return RatesResponse(
+        routes=routes_resp,
+        average_rate_per_trip=result["avg_rate"],
+        summary=SummaryStats(
+            total_trips=result["total_trips"],
+            total_route_costs=result["total_route_costs"],
+            total_monthly_costs=result["total_monthly_costs"]
         )
-
-        df = result["df"]
-
-        routes_resp = [
-            RouteRateResponse(**row)
-            for row in df.to_dict(orient="records")
-        ]
-
-        return RatesResponse(
-            routes=routes_resp,
-            average_rate_per_trip=result["avg_rate"],
-            summary=SummaryStats(
-                total_trips=result["total_trips"],
-                total_route_costs=result["total_route_costs"],
-                total_monthly_costs=result["total_monthly_costs"]
-            )
-        )
-
-    except Exception as e:
-        logger.error(f"Error calculating rates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+    )
 
 
 @app.get("/clients/scores", response_model=List[ClientScoreResponse], tags=["Predictive Engine"])
 async def get_client_scores():
-    try:
-        df = predictive_engine.calculate_client_scores()
-        return [ClientScoreResponse(**row) for row in df.to_dict(orient="records")]
+    df = predictive_engine.calculate_client_scores()
+    if df.empty:
+        raise BusinessLogicError("No client data available for scoring")
 
-    except Exception as e:
-        logger.error(f"Error getting scores: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    return [ClientScoreResponse(**row) for row in df.to_dict(orient="records")]
