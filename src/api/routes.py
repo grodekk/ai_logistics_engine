@@ -1,16 +1,25 @@
-@app.get("/health", tags=["Health"])
+from fastapi import APIRouter
+from typing import List
+from src.api.schemas import RouteInput, RatesResponse, RouteRateResponse, SummaryStats, ClientScoreResponse
+from src.api.exceptions import BusinessLogicError
+from src.api.main import dp, decision_engine, predictive_engine
+
+router = APIRouter()
+
+
+@router.get("/health", tags=["Health"])
 async def health_check():
     return {"status": "ok", "service": "AI Logistics Engine"}
 
 
-@app.get("/routes/available", tags=["Routes"])
+@router.get("/routes/available", tags=["Routes"])
 async def get_available_routes():
     df = dp.get_routes_costs()
     routes = df['route_name'].unique().tolist()
     return {"routes": routes}
 
 
-@app.post("/decision/rates", response_model=RatesResponse, tags=["Decision Engine"])
+@router.post("/decision/rates", response_model=RatesResponse, tags=["Decision Engine"])
 async def calculate_route_rates(
         routes: List[RouteInput],
         monthly_profit_target: float
@@ -38,7 +47,7 @@ async def calculate_route_rates(
     )
 
 
-@app.get("/clients/scores", response_model=List[ClientScoreResponse], tags=["Predictive Engine"])
+@router.get("/clients/scores", response_model=List[ClientScoreResponse], tags=["Predictive Engine"])
 async def get_client_scores():
     df = predictive_engine.calculate_client_scores()
     if df.empty:
