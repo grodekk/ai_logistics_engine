@@ -1,8 +1,9 @@
-import os
-from src.json_loader import JsonLoader
 import logging
 import psycopg2
 from psycopg2 import sql
+from pathlib import Path
+from src.json_loader import JsonLoader
+from src.exceptions import InfrastructureError
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -12,7 +13,6 @@ class DatabaseService:
     def __init__(self, config):
         self.config = config
         self.conn = None
-
 
     def connect(self):
         try:
@@ -27,33 +27,62 @@ class DatabaseService:
 
         except psycopg2.Error as e:
             logger.error(f"Connection error: {e}")
-            raise
+            raise InfrastructureError(
+                message=f"Database connection failed: {e}",
+                user_message="Database is unavailable. Please contact support."
+            )
 
+    def _ensure_connection(self):
+        if self.conn is None or self.conn.closed:
+            self.connect()
 
     def disconnect(self):
         if self.conn:
             self.conn.close()
             logger.info("Disconnected from the database")
 
-
     def execute(self, query, params=None):
+        self._ensure_connection()
         try:
             with self.conn.cursor() as cur:
                 cur.execute(query, params)
-
             self.conn.commit()
+
+        except psycopg2.InterfaceError as e:
+            logger.error(f"Connection closed: {e}")
+            raise InfrastructureError(
+                message=f"Connection closed: {e}",
+                user_message="Database connection lost. Please try again."
+            )
 
         except psycopg2.Error as e:
             self.conn.rollback()
             logger.error(f"Query execution error: {e}")
-            raise
-
+            raise InfrastructureError(
+                message=f"Query execution failed: {e}",
+                user_message="Database error. Please contact support."
+            )
 
     def fetch_all(self, query, params=None):
-        with self.conn.cursor() as cur:
-            cur.execute(query, params)
-            return cur.fetchall()
+        self._ensure_connection()
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(query, params)
+                return cur.fetchall()
 
+        except psycopg2.InterfaceError as e:
+            logger.error(f"Connection closed: {e}")
+            raise InfrastructureError(
+                message=f"Connection closed: {e}",
+                user_message="Database connection lost. Please try again."
+            )
+
+        except psycopg2.Error as e:
+            logger.error(f"Query fetch error: {e}")
+            raise InfrastructureError(
+                message=f"Query fetch failed: {e}",
+                user_message="Database error. Please contact support."
+            )
 
     def create_tables(self):
         queries = [
@@ -87,14 +116,13 @@ class DatabaseService:
         ]
         for query in queries:
             self.execute(query)
-
         logger.info("Tables created successfully")
-
 
     def bulk_insert(self, table, columns, values):
         if not values:
             return
 
+        self._ensure_connection()
         try:
             placeholders = ', '.join(['%s'] * len(columns))
             query = sql.SQL("INSERT INTO {} ({}) VALUES ({})").format(
@@ -104,35 +132,33 @@ class DatabaseService:
             )
             with self.conn.cursor() as cur:
                 cur.executemany(query, values)
-
             self.conn.commit()
             logger.info(f"Inserted {len(values)} rows into {table}")
-
+        except psycopg2.InterfaceError as e:
+            logger.error(f"Connection closed: {e}")
+            raise InfrastructureError(
+                message=f"Connection closed: {e}",
+                user_message="Database connection lost. Please try again."
+            )
         except psycopg2.Error as e:
             self.conn.rollback()
             logger.error(f"Error inserting into {table}: {e}")
-            raise
+            raise InfrastructureError(
+                message=f"Bulk insert failed for {table}: {e}",
+                user_message="Database error. Please contact support."
+            )
 
-
-    def load_json(self, filepath, table, columns):
-        try:
-            full_path = str(self.build_fullpath(filepath))
-            data = JsonLoader(full_path).load()
-            values = self.prepare_values(data, columns)
-
-            self.bulk_insert(table, columns, values)
-
-        except Exception as e:
-            logger.error(f"Failed to load data from {filepath}: {e}")
-            raise
-
+    def insert_json_into_table(self, filepath, table, columns):
+        full_path = str(self.build_fullpath(filepath))
+        data = JsonLoader(full_path).load()
+        values = self.prepare_values(data, columns)
+        self.bulk_insert(table, columns, values)
 
     @staticmethod
     def build_fullpath(filepath):
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        full_path = os.path.join(base_dir, filepath)
-        return full_path
-
+        base_dir = Path(__file__).resolve().parent.parent
+        data_dir = base_dir / "data"
+        return data_dir / filepath
 
     @staticmethod
     def prepare_values(data, columns):
