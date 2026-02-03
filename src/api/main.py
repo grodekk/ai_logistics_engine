@@ -1,7 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from fastapi import Request
 from pydantic import BaseModel, conint
 from typing import List
 from contextlib import asynccontextmanager
@@ -10,8 +8,9 @@ from src.config import Config
 from src.data_processing import DataProcessing
 from src.decision_engine import DecisionEngine
 from src.predictive_engine import PredictiveEngine
-from src.exceptions import InfrastructureError, BusinessLogicError
+from src.exceptions import BusinessLogicError
 import logging
+from src.api.exceptions import register_exception_handlers
 
 
 logging.basicConfig(level=logging.INFO)
@@ -33,6 +32,8 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="AI Logistics Engine", version="0.1", lifespan=lifespan)
+
+register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,
@@ -80,25 +81,6 @@ class ClientScoreResponse(BaseModel):
     late_payment_count: int
     total_shipments: int
     score: float
-
-
-# --- Exception Handlers ---
-
-@app.exception_handler(InfrastructureError)
-async def infra_error_handler(_: Request, exc: InfrastructureError):
-    logger.error(f"[{exc.error_id}] {exc.message}", exc_info=True)
-    return JSONResponse(
-        status_code=503,
-        content=exc.to_dict()
-    )
-
-@app.exception_handler(BusinessLogicError)
-async def business_error_handler(_: Request, exc: BusinessLogicError):
-    logger.warning(f"[{exc.error_id}] {exc.message}")
-    return JSONResponse(
-        status_code=400,
-        content=exc.to_dict()
-    )
 
 
 # --- Endpoints ---
