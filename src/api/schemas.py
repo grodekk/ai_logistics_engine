@@ -1,3 +1,6 @@
+from pydantic import BaseModel, conint
+from typing import List
+
 class RouteInput(BaseModel):
     route_name: str
     monthly_trips: conint(gt=0, le=10000)
