@@ -16,19 +16,32 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-db = DatabaseService(Config())
-
 @asynccontextmanager
-async def lifespan(_: FastAPI):
-    try:
-        db.connect()
-        logger.info("Database connected")
-        yield
-    finally:
-        db.disconnect()
-        logger.info("Database disconnected")
+async def lifespan(app: FastAPI):
+    config = Config()
+    db = DatabaseService(config)
 
-app = FastAPI(title="AI Logistics Engine", version="0.1", lifespan=lifespan)
+    dp = DataProcessing(db)
+    decision_engine = DecisionEngine(dp)
+    predictive_engine = PredictiveEngine(dp)
+
+    router = create_routes(dp, decision_engine, predictive_engine)
+    app.include_router(router)
+
+    logger.info("Application ready")
+    yield
+
+    logger.info("Application shutting down")
+    db.disconnect()
+    logger.info("Shutdown complete")
+
+
+app = FastAPI(
+    title="AI Logistics Engine",
+    version="0.1",
+    lifespan=lifespan
+)
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -37,11 +50,5 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+
 register_exception_handlers(app)
-
-dp = DataProcessing(db)
-decision_engine = DecisionEngine(dp)
-predictive_engine = PredictiveEngine(dp)
-
-router = create_routes(dp, decision_engine, predictive_engine)
-app.include_router(router)
