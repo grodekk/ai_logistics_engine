@@ -2,7 +2,7 @@ from typing import List
 from src.api.schemas import (RouteInput, RatesResponse, RouteRateResponse,SummaryStats, ClientScoreResponse)
 from src.api.exceptions import BusinessLogicError
 from src.data_processing import DataProcessing
-from src.decision_engine import DecisionEngine
+from src.engines.decision_engine import DecisionEngine
 from src.predictive_engine import PredictiveEngine
 
 

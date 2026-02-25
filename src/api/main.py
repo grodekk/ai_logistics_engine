@@ -3,10 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
 
-from src.db_service import DatabaseService
+from src.db.db_service import DatabaseService
 from src.config import Config
 from src.data_processing import DataProcessing
-from src.decision_engine import DecisionEngine
+from src.engines.decision_engine import DecisionEngine
 from src.predictive_engine import PredictiveEngine
 
 from src.api.exceptions import register_exception_handlers

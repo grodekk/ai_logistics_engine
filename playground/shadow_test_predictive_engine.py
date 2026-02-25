@@ -1,4 +1,4 @@
-from src.db_service import DatabaseService
+from src.db.db_service import DatabaseService
 from src.data_processing import DataProcessing
 from src.predictive_engine import PredictiveEngine
 from src.config import Config

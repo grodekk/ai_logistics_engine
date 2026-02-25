@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import Mock, patch, MagicMock, mock_open
-from src.db_service import DatabaseService
+from src.db.db_service import DatabaseService
 import psycopg2
 
 

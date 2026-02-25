@@ -134,12 +134,14 @@ class DatabaseService:
                 cur.executemany(query, values)
             self.conn.commit()
             logger.info(f"Inserted {len(values)} rows into {table}")
+
         except psycopg2.InterfaceError as e:
             logger.error(f"Connection closed: {e}")
             raise InfrastructureError(
                 message=f"Connection closed: {e}",
                 user_message="Database connection lost. Please try again."
             )
+
         except psycopg2.Error as e:
             self.conn.rollback()
             logger.error(f"Error inserting into {table}: {e}")
