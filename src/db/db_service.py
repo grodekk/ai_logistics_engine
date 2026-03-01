@@ -149,10 +149,14 @@ class DatabaseService:
             )
 
 
-    def insert_json_into_table(self, filepath, table, columns):
-        full_path = self.build_fullpath(filepath)
-        data = JsonLoader(full_path).load()
-        df = pd.DataFrame(data)
+    @staticmethod
+    def load_json_to_df(filepath: str) -> pd.DataFrame:
+        data = JsonLoader(filepath).load()
+        return pd.DataFrame(data)
+
+
+    def insert_json_to_table(self, filepath, table, columns):
+        df = self.load_json_to_df(filepath)
         self.insert_dataframe(table, df, columns)
 
 
