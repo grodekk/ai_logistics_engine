@@ -1,10 +1,8 @@
 import logging
 import psycopg2
 from psycopg2 import sql
-from pathlib import Path
-from src.json_loader import JsonLoader
 from src.exceptions import InfrastructureError
-import pandas as pd
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -147,34 +145,3 @@ class DatabaseService:
                 message=f"Bulk insert failed for {table}: {e}",
                 user_message="Database error. Please contact support."
             )
-
-
-    @staticmethod
-    def load_json_to_df(filepath: str) -> pd.DataFrame:
-        data = JsonLoader(filepath).load()
-        return pd.DataFrame(data)
-
-
-    def insert_json_to_table(self, filepath, table, columns):
-        df = self.load_json_to_df(filepath)
-        self.insert_dataframe(table, df, columns)
-
-
-    @staticmethod
-    def build_fullpath(filepath):
-        base_dir = Path(__file__).resolve().parent.parent.parent
-        data_dir = base_dir / "data"
-        return data_dir / filepath
-
-
-    def insert_dataframe(self, table, df, columns):
-        values = self.prepare_values_from_dataframe(df, columns)
-        if values:
-            self.bulk_insert(table, columns, values)
-
-
-    @staticmethod
-    def prepare_values_from_dataframe(df, columns):
-        if df.empty:
-            return []
-        return [tuple(row) for row in df[columns].to_numpy()]
