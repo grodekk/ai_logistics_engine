@@ -1,5 +1,5 @@
 from src.db.db_service import DatabaseService
-from src.data_processing import DataProcessing
+from src.etl.transform.data_processing import DataProcessing
 from src.config import Config
 
 db = DatabaseService(Config())
