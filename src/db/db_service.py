@@ -2,6 +2,8 @@ import logging
 import psycopg2
 from psycopg2 import sql
 from src.exceptions import InfrastructureError
+from src.etl.load.sql_loader import SQLLoader
+from src.utils import SQL_DIR
 
 
 logging.basicConfig(level=logging.INFO)
@@ -78,37 +80,10 @@ class DatabaseService:
 
 
     def create_tables(self):
-        queries = [
-            """
-            CREATE TABLE IF NOT EXISTS monthly_costs (
-                id SERIAL PRIMARY KEY,
-                cost_name TEXT NOT NULL,
-                amount NUMERIC(10, 2) NOT NULL
-            );
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS routes_costs (
-                id SERIAL PRIMARY KEY,
-                route_name TEXT NOT NULL,
-                fuel NUMERIC(10, 2) NOT NULL,
-                tolls NUMERIC(10, 2) DEFAULT 0,
-                ferry NUMERIC(10, 2) DEFAULT 0,
-                hotel NUMERIC(10, 2) DEFAULT 0
-            );
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS clients (
-                id SERIAL PRIMARY KEY,
-                client_name TEXT NOT NULL,
-                client_class TEXT NOT NULL,
-                avg_payment_delay_days INTEGER DEFAULT 0,
-                late_payment_count INTEGER DEFAULT 0,
-                total_shipments INTEGER DEFAULT 0
-            );
-            """
-        ]
-        for query in queries:
-            self.execute(query)
+        sql_loader = SQLLoader(SQL_DIR)
+
+        for sql_content in vars(sql_loader.tables).values():
+            self.execute(sql_content)
 
         logger.info("Tables created successfully")
 
