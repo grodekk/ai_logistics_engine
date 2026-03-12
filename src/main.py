@@ -1,9 +1,11 @@
 from config import Config
 from src.db.db_service import DatabaseService
-from src.etl.load import DBLoader
+from src.etl.load.db_loader import DBLoader
 from src.etl.exctract import JSONExtractor
-from utils import build_fullpath
+from utils import data_path
 from src.json_loader import JsonLoader
+from etl.transform.routes_normalizer import normalize_routes
+import pandas as pd
 
 def run():
     config = Config()
@@ -29,8 +31,13 @@ def run():
         ]
 
         for filepath, table, columns in json_files:
-            full_path = build_fullpath(filepath)
+            full_path = data_path(filepath)
             df = extractor.load_json_to_df(full_path)
+            if table == "routes_costs":
+                routes_list = df.to_dict(orient="records")
+                routes_list = normalize_routes(routes_list)
+                df = pd.DataFrame(routes_list)
+
             db_loader.insert_dataframe(table, df, columns)
 
     finally:
