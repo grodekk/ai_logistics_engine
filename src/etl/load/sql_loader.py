@@ -10,7 +10,8 @@ class SQLLoader:
             parts = path.relative_to(self.base_dir).parts
             self._set_nested(self, parts[:-1], path.stem, path.read_text(encoding="utf-8"))
 
-    def _set_nested(self, obj, dirs, name, content):
+    @staticmethod
+    def _set_nested(obj, dirs, name, content):
         for d in dirs:
             if not hasattr(obj, d):
                 setattr(obj, d, SimpleNamespace())
