@@ -93,18 +93,14 @@ class DatabaseService:
             return
 
         self._ensure_connection()
+        query = self._build_insert_query(table, columns)
         try:
-            placeholders = ', '.join(['%s'] * len(columns))
-            query = sql.SQL("INSERT INTO {} ({}) VALUES ({})").format(
-                sql.Identifier(table),
-                sql.SQL(', ').join(map(sql.Identifier, columns)),
-                sql.SQL(placeholders)
-            )
             with self.conn.cursor() as cur:
-                cur.executemany(query, values)
+                self._execute_bulk(cur, query, values)
 
             self.conn.commit()
             logger.info(f"Inserted {len(values)} rows into {table}")
+
 
         except psycopg2.InterfaceError as e:
             logger.error(f"Connection closed: {e}")
@@ -120,3 +116,18 @@ class DatabaseService:
                 message=f"Bulk insert failed for {table}: {e}",
                 user_message="Database error. Please contact support."
             )
+
+
+    @staticmethod
+    def _build_insert_query(table, columns):
+        placeholders = ', '.join(['%s'] * len(columns))
+        return sql.SQL("INSERT INTO {} ({}) VALUES ({})").format(
+            sql.Identifier(table),
+            sql.SQL(', ').join(map(sql.Identifier, columns)),
+            sql.SQL(placeholders)
+        )
+
+
+    @staticmethod
+    def _execute_bulk(cur, query, values):
+        cur.executemany(query, values)
