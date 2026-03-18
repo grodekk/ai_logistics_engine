@@ -54,3 +54,13 @@ class JsonParseError(InfrastructureError):
             message=f"JSON parsing error in {filepath}: {original_error}",
             user_message="Data file is corrupted! Please contact support."
         )
+
+
+class DatabaseError(InfrastructureError):
+    pass
+
+class ConnectionLostError(DatabaseError):
+    pass
+
+class BulkInsertError(DatabaseError):
+    pass
