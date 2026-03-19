@@ -28,11 +28,7 @@ class DatabaseService:
             logger.info("Connected to the database")
 
         except psycopg2.Error as e:
-            logger.error(f"Connection error: {e}")
-            raise InfrastructureError(
-                message=f"Database connection failed: {e}",
-                user_message="Database is unavailable. Please contact support."
-            )
+            self._handle_db_error(e, context="connect")
 
 
     def _ensure_connection(self):
@@ -64,19 +60,9 @@ class DatabaseService:
                 self.conn.commit()
 
         except psycopg2.InterfaceError as e:
-            logger.error(f"Connection closed: {e}")
-            raise InfrastructureError(
-                message=f"Connection closed: {e}",
-                user_message="Database connection lost. Please try again."
-            )
-
+            self._handle_connection_error(e)
         except psycopg2.Error as e:
-            self.conn.rollback()
-            logger.error(f"Query error: {e}")
-            raise InfrastructureError(
-                message=f"Database query failed: {e}",
-                user_message="Database error. Please contact support."
-            )
+            self._handle_db_error(e, query)
 
 
     def create_tables(self):
@@ -101,21 +87,8 @@ class DatabaseService:
             self.conn.commit()
             logger.info(f"Inserted {len(values)} rows into {table}")
 
-
-        except psycopg2.InterfaceError as e:
-            logger.error(f"Connection closed: {e}")
-            raise InfrastructureError(
-                message=f"Connection closed: {e}",
-                user_message="Database connection lost. Please try again."
-            )
-
         except psycopg2.Error as e:
-            self.conn.rollback()
-            logger.error(f"Error inserting into {table}: {e}")
-            raise InfrastructureError(
-                message=f"Bulk insert failed for {table}: {e}",
-                user_message="Database error. Please contact support."
-            )
+            self._handle_db_error(e, context="connect")
 
 
     @staticmethod
@@ -131,3 +104,21 @@ class DatabaseService:
     @staticmethod
     def _execute_bulk(cur, query, values):
         cur.executemany(query, values)
+
+
+    def _handle_db_error(self, e, context):
+        self.conn.rollback() if self.conn else None
+        logger.error(f"Database error during {context}: {e}")
+        raise InfrastructureError(
+            message=f"Database error during {context}: {e}",
+            user_message="Database error. Please contact support."
+        )
+
+
+    @staticmethod
+    def _handle_connection_error(e):
+        logger.error(f"Connection error: {e}")
+        raise InfrastructureError(
+            message=f"Connection closed: {e}",
+            user_message="Database connection lost. Please try again."
+        )
