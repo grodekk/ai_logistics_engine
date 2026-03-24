@@ -65,22 +65,24 @@ class DatabaseService:
             self._handle_db_error(e, query)
 
 
-    def create_tables(self):
+    def create_sql(self, group):
         sql_loader = SQLLoader(SQL_DIR)
 
-        for sql_content in vars(sql_loader.tables).values():
-            self.execute(sql_content)
+        if not hasattr(sql_loader, group):
+            logger.error(f"SQL group '{group}' not found in SQLLoader")
+            raise InfrastructureError(
+                message=f"SQL group '{group}' not found in SQLLoader",
+                user_message="Internal error. Please contact support."
+            )
 
-        logger.info("Tables created successfully")
+        if hasattr(sql_loader, group):
+            for sql_content in vars(getattr(sql_loader, group)).values():
+                try:
+                    self.execute(sql_content)
+                except Exception as e:
+                    logger.error(f"Error executing SQL for group '{group}': {e}")
 
-
-    def create_views(self):
-        sql_loader = SQLLoader(SQL_DIR)
-
-        for sql_content in vars(sql_loader.views).values():
-            self.execute(sql_content)
-
-        logger.info("Views created successfully")
+        logger.info(f"{group} created successfully")
 
 
     def bulk_insert(self, table, columns, values):
