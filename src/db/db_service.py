@@ -74,6 +74,15 @@ class DatabaseService:
         logger.info("Tables created successfully")
 
 
+    def create_views(self):
+        sql_loader = SQLLoader(SQL_DIR)
+
+        for sql_content in vars(sql_loader.views).values():
+            self.execute(sql_content)
+
+        logger.info("Views created successfully")
+
+
     def bulk_insert(self, table, columns, values):
         if not values:
             return
