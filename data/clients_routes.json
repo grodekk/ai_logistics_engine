@@ -1,0 +1,22 @@
+[
+  {"client_name": "Alpha cars", "route_name": "Warsaw - Berlin", "shipments": 5},
+  {"client_name": "Alpha cars", "route_name": "Berlin - Paris", "shipments": 4},
+  {"client_name": "Alpha cars", "route_name": "Paris - London", "shipments": 6},
+
+  {"client_name": "Alpha books", "route_name": "Paris - London", "shipments": 10},
+  {"client_name": "Alpha books", "route_name": "London - Copenhagen", "shipments": 6},
+  {"client_name": "Alpha books", "route_name": "Berlin - Paris", "shipments": 5},
+
+  {"client_name": "Alpha shop", "route_name": "Warsaw - Berlin", "shipments": 40},
+  {"client_name": "Alpha shop", "route_name": "Berlin - Paris", "shipments": 30},
+  {"client_name": "Alpha shop", "route_name": "Paris - London", "shipments": 50},
+  {"client_name": "Alpha shop", "route_name": "Copenhagen - Warsaw", "shipments": 30},
+
+  {"client_name": "Alpha bikes", "route_name": "Berlin - Paris", "shipments": 30},
+  {"client_name": "Alpha bikes", "route_name": "Paris - London", "shipments": 40},
+  {"client_name": "Alpha bikes", "route_name": "London - Copenhagen", "shipments": 30},
+
+  {"client_name": "Alpha pets", "route_name": "Warsaw - Berlin", "shipments": 10},
+  {"client_name": "Alpha pets", "route_name": "Berlin - Paris", "shipments": 5},
+  {"client_name": "Alpha pets", "route_name": "Paris - London", "shipments": 7}
+]
