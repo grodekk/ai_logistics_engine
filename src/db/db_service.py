@@ -75,12 +75,11 @@ class DatabaseService:
                 user_message="Internal error. Please contact support."
             )
 
-        if hasattr(sql_loader, group):
-            for sql_content in vars(getattr(sql_loader, group)).values():
-                try:
-                    self.execute(sql_content)
-                except Exception as e:
-                    logger.error(f"Error executing SQL for group '{group}': {e}")
+        for sql_content in vars(getattr(sql_loader, group)).values():
+            try:
+                self.execute(sql_content)
+            except Exception as e:
+                logger.error(f"[{group}] SQL execution error: {e} | SQL: {sql_content[:50]}...")
 
         logger.info(f"{group} created successfully")
 
