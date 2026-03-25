@@ -3,14 +3,31 @@
     "client_name": "Alpha cars",
     "client_class": "A",
     "avg_payment_delay_days": 5,
-    "late_payment_count": 2,
-    "total_shipments": 15
+    "late_payment_count": 2
   },
   {
-    "client_name": "Beta books",
+    "client_name": "Alpha books",
     "client_class": "B",
-    "avg_payment_delay_days": 15,
-    "late_payment_count": 7,
-    "total_shipments": 22
+    "avg_payment_delay_days": 21,
+    "late_payment_count": 4
+  },
+  {
+    "client_name": "Alpha shop",
+    "client_class": "A",
+    "avg_payment_delay_days": 51,
+    "late_payment_count": 22
+  },
+  {
+    "client_name": "Alpha bikes",
+    "client_class": "B",
+    "avg_payment_delay_days": 36,
+    "late_payment_count": 1
+  },
+  {
+    "client_name": "Alpha pets",
+    "client_class": "B",
+    "avg_payment_delay_days": 0,
+    "late_payment_count": 0
   }
 ]
+
