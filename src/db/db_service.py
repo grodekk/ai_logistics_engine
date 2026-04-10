@@ -65,23 +65,38 @@ class DatabaseService:
             self._handle_db_error(e, query)
 
 
-    def create_sql(self, group):
+    def create_tables(self):
         sql_loader = SQLLoader(SQL_DIR)
 
-        if not hasattr(sql_loader, group):
-            logger.error(f"SQL group '{group}' not found in SQLLoader")
-            raise InfrastructureError(
-                message=f"SQL group '{group}' not found in SQLLoader",
-                user_message="Internal error. Please contact support."
-            )
+        ordered_tables = [
+            sql_loader.tables.routes_costs,
+            sql_loader.tables.clients,
+            sql_loader.tables.monthly_costs,
+            sql_loader.tables.clients_routes,
+        ]
 
-        for sql_content in vars(getattr(sql_loader, group)).values():
+        for sql_item in ordered_tables:
             try:
-                self.execute(sql_content)
+                self.execute(sql_item)
             except Exception as e:
-                logger.error(f"[{group}] SQL execution error: {e} | SQL: {sql_content[:50]}...")
+                logger.error(f"[tables] SQL execution error: {e}")
+                raise InfrastructureError(
+                    message=f"Error executing SQL for tables: {e}",
+                    user_message="Error setting up tables. Please contact support."
+                )
 
-        logger.info(f"{group} created successfully")
+    def create_views(self):
+        sql_loader = SQLLoader(SQL_DIR)
+
+        for sql_item in vars(sql_loader.views).values():
+            try:
+                self.execute(sql_item)
+            except Exception as e:
+                logger.error(f"[views] SQL execution error: {e}")
+                raise InfrastructureError(
+                    message=f"Error executing SQL for views: {e}",
+                    user_message="Error setting up views. Please contact support."
+                )
 
 
     def bulk_insert(self, table, columns, values):
