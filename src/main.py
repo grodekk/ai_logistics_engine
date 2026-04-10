@@ -16,19 +16,19 @@ def run():
 
     try:
         db_service.execute("DROP TABLE IF EXISTS routes_costs, monthly_costs, clients, clients_routes CASCADE")
-        db_service.create_sql("tables")
-        db_service.create_sql("views")
+        db_service.create_tables()
+        db_service.create_views()
 
         json_files = [
             ("monthly_costs.json", "monthly_costs", ["cost_name", "amount"]),
             ("routes_costs.json", "routes_costs", ["route_name", "fuel", "tolls", "ferry", "hotel"]),
-            ("clients_routes.json", "clients_routes", ["client_name", "route_name", "shipments"]),
             ("clients.json", "clients", [
                 "client_name",
                 "client_class",
                 "avg_payment_delay_days",
                 "late_payment_count",
-            ])
+            ]),
+            ("clients_routes.json", "clients_routes", ["client_name", "route_name", "shipments"])
         ]
 
         for filepath, table, columns in json_files:
