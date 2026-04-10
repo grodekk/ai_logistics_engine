@@ -1,5 +1,5 @@
 SELECT
-    (SELECT SUM(amount) FROM monthly_costs)
+    (SELECT total_fixed_costs FROM fixed_costs_total)
     +
     (SELECT SUM(r.total_route_cost * cr.shipments)
      FROM clients_routes cr
