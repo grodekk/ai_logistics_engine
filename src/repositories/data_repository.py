@@ -20,12 +20,6 @@ class DataRepository:
 
     def get_clients(self):
         query = self.sql_loader.queries.get_clients
-        columns = [
-            "client_name",
-            "client_class",
-            "avg_payment_delay_days",
-            "late_payment_count",
-            "total_shipments",
-        ]
+        columns = ["client_name", "client_class", "avg_payment_delay_days", "late_payment_count", "total_shipments"]
 
         return fetch_dataframe(self.db, query, columns)

@@ -16,21 +16,8 @@ class AnalyticsRepository:
 
     def get_route_costs_breakdown(self):
         query = self.sql_loader.queries.get_route_costs_breakdown
-        columns = [
-            "route_name",
-            "fuel",
-            "tolls",
-            "ferry",
-            "hotel",
-            "total_route_cost",
-        ]
-        float_columns = [
-            "fuel",
-            "tolls",
-            "ferry",
-            "hotel",
-            "total_route_cost",
-        ]
+        columns = ["route_name", "fuel", "tolls", "ferry", "hotel", "total_route_cost"]
+        float_columns = ["fuel", "tolls", "ferry", "hotel", "total_route_cost"]
 
         return fetch_dataframe(self.db, query, columns, float_columns)
 
