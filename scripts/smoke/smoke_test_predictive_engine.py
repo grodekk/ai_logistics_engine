@@ -1,7 +1,7 @@
-from src.db.db_service import DatabaseService
-from src.data_processing import DataProcessing
-from src.predictive_engine import PredictiveEngine
 from src.config import Config
+from src.db.db_service import DatabaseService
+from src.engines.predictive_engine import PredictiveEngine
+from src.repositories.data_repository import DataRepository
 
 
 def main():
@@ -9,12 +9,12 @@ def main():
     db.connect()
 
     try:
-        dp = DataProcessing(db)
-        engine = PredictiveEngine(dp)
+        data_repository = DataRepository(db)
+        engine = PredictiveEngine(data_repository)
 
         df_scores = engine.calculate_client_scores()
 
-        print("\n=== SHADOW TEST: PredictiveEngine ===\n")
+        print("\n=== SMOKE TEST: PredictiveEngine ===\n")
         print(df_scores)
         print("\nSummary:")
         print(f"Min score: {df_scores['score'].min()}")

@@ -1,7 +1,7 @@
-from src.db.db_service import DatabaseService
-from src.data_processing import DataProcessing
-from src.engines.decision_engine import DecisionEngine
 from src.config import Config
+from src.db.db_service import DatabaseService
+from src.engines.decision_engine import DecisionEngine
+from src.repositories.data_repository import DataRepository
 
 
 def main():
@@ -9,22 +9,20 @@ def main():
     db.connect()
 
     try:
-        dp = DataProcessing(db)
-        engine = DecisionEngine(dp)
+        data_repository = DataRepository(db)
+        engine = DecisionEngine(data_repository)
 
         routes_info = [
             {"route_name": "Warsaw - Berlin", "monthly_trips": 2},
-            {"route_name": "Paris - London", "monthly_trips": 1}
+            {"route_name": "Paris - London", "monthly_trips": 1},
         ]
-
-        monthly_profit_target = 10000
 
         result = engine.calculate_rates_for_routes(
             routes_info=routes_info,
-            monthly_profit_target=monthly_profit_target
+            monthly_profit_target=10000,
         )
 
-        print("\n=== SHADOW TEST: DecisionEngine ===\n")
+        print("\n=== SMOKE TEST: DecisionEngine ===\n")
         print(result["df"])
         print(f"\nTotal trips: {result['total_trips']}")
         print(f"Total route costs: {result['total_route_costs']:.2f}")
