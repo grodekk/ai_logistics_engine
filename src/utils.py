@@ -1,10 +1,9 @@
 from pathlib import Path
-import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-DATA_DIR = Path(os.getenv("DATA_DIR", BASE_DIR / "data"))
-SQL_DIR = Path(os.getenv("SQL_DIR", BASE_DIR / "src/sql"))
+DATA_DIR = BASE_DIR / "data"
+SQL_DIR = BASE_DIR / "src" / "sql"
 
 
 def data_path(filename: str) -> Path:

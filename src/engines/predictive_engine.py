@@ -24,9 +24,13 @@ class PredictiveEngine:
 
     @staticmethod
     def _compute_scores(df):
-        df["score"] = 100 - df["avg_payment_delay_days"]*2 \
-                          - df["late_payment_count"]*5 \
-                          + df["class_bonus"]
+        df["score"] = (
+                100
+                - df["avg_payment_delay_days"] * 2
+                - df["late_payment_count"] * 5
+                + df["class_bonus"]
+        )
+
         return df
 
     @staticmethod
