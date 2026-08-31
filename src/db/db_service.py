@@ -1,9 +1,9 @@
 import logging
 import psycopg2
 from psycopg2 import sql
-from src.exceptions import InfrastructureError
-from src.etl.load.sql_loader import SQLLoader
-from src.utils import SQL_DIR
+from src.core.exceptions import InfrastructureError
+from src.db.sql_loader import SQLLoader
+from src.core.paths import SQL_DIR
 
 
 logger = logging.getLogger(__name__)

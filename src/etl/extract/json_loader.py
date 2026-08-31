@@ -1,5 +1,5 @@
 import json
-from src.exceptions import JsonFileNotFound, JsonParseError
+from src.core.exceptions import JsonFileNotFound, JsonParseError
 from typing import List, Dict, Any
 
 class JsonLoader:

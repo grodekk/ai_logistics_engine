@@ -1,6 +1,6 @@
 from src.repositories.query_helpers import fetch_dataframe, fetch_scalar
-from src.etl.load.sql_loader import SQLLoader
-from src.utils import SQL_DIR
+from src.db.sql_loader import SQLLoader
+from src.core.paths import SQL_DIR
 
 
 class AnalyticsRepository:

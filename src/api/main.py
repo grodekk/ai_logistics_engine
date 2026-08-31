@@ -4,9 +4,9 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.api.exceptions import register_exception_handlers
+from src.api.exception_handlers import register_exception_handlers
 from src.api.routes import create_routes
-from src.config import Config
+from src.core.config import Config
 from src.db.db_service import DatabaseService
 from src.engines.decision_engine import DecisionEngine
 from src.engines.predictive_engine import PredictiveEngine

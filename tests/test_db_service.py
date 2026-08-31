@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import Mock, patch, MagicMock
 import psycopg2
 from src.db.db_service import DatabaseService
-from src.exceptions import InfrastructureError
+from src.core.exceptions import InfrastructureError
 
 
 @pytest.fixture

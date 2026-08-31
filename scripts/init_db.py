@@ -1,4 +1,4 @@
-from src.config import Config
+from src.core.config import Config
 from src.db.db_service import DatabaseService
 
 

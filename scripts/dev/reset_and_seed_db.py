@@ -1,9 +1,9 @@
-from src.config import Config
+from src.core.config import Config
 from src.db.db_service import DatabaseService
 from src.etl.extract.json_extractor import JSONExtractor
 from src.etl.load.db_loader import DBLoader
-from src.json_loader import JsonLoader
-from src.utils import data_path
+from src.etl.extract.json_loader import JsonLoader
+from src.core.paths import data_path
 
 
 def main():

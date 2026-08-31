@@ -1,4 +1,4 @@
-from src.config import Config
+from src.core.config import Config
 from src.db.db_service import DatabaseService
 from src.engines.decision_engine import DecisionEngine
 from src.repositories.data_repository import DataRepository

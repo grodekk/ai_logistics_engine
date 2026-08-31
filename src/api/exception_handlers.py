@@ -1,7 +1,7 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
 import logging
-from src.exceptions import InfrastructureError, BusinessLogicError
+from src.core.exceptions import InfrastructureError, BusinessLogicError
 
 logger = logging.getLogger(__name__)
 
