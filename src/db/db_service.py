@@ -6,7 +6,6 @@ from src.etl.load.sql_loader import SQLLoader
 from src.utils import SQL_DIR
 
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -14,7 +13,6 @@ class DatabaseService:
     def __init__(self, config):
         self.config = config
         self.conn = None
-
 
     def connect(self):
         try:
@@ -30,25 +28,20 @@ class DatabaseService:
         except psycopg2.Error as e:
             self._handle_db_error(e, context="connect")
 
-
     def _ensure_connection(self):
         if self.conn is None or self.conn.closed:
             self.connect()
-
 
     def disconnect(self):
         if self.conn:
             self.conn.close()
             logger.info("Disconnected from the database")
 
-
     def execute(self, query, params=None):
         self._run_query(query, params)
 
-
     def fetch_all(self, query, params=None):
         return self._run_query(query, params, fetch_all=True)
-
 
     def _run_query(self, query, params=None, fetch_all=False):
         self._ensure_connection()
@@ -61,9 +54,9 @@ class DatabaseService:
 
         except psycopg2.InterfaceError as e:
             self._handle_connection_error(e)
+
         except psycopg2.Error as e:
             self._handle_db_error(e, query)
-
 
     def create_tables(self):
         sql_loader = SQLLoader(SQL_DIR)
@@ -78,6 +71,7 @@ class DatabaseService:
         for sql_item in ordered_tables:
             try:
                 self.execute(sql_item)
+
             except Exception as e:
                 logger.error(f"[tables] SQL execution error: {e}")
                 raise InfrastructureError(
@@ -91,13 +85,13 @@ class DatabaseService:
         for sql_item in vars(sql_loader.views).values():
             try:
                 self.execute(sql_item)
+
             except Exception as e:
                 logger.error(f"[views] SQL execution error: {e}")
                 raise InfrastructureError(
                     message=f"Error executing SQL for views: {e}",
                     user_message="Error setting up views. Please contact support."
                 )
-
 
     def bulk_insert(self, table, columns, values):
         if not values:
@@ -115,7 +109,6 @@ class DatabaseService:
         except psycopg2.Error as e:
             self._handle_db_error(e, context="connect")
 
-
     @staticmethod
     def _build_insert_query(table, columns):
         placeholders = ', '.join(['%s'] * len(columns))
@@ -125,11 +118,9 @@ class DatabaseService:
             sql.SQL(placeholders)
         )
 
-
     @staticmethod
     def _execute_bulk(cur, query, values):
         cur.executemany(query, values)
-
 
     def _handle_db_error(self, e, context):
         self.conn.rollback() if self.conn else None
@@ -138,7 +129,6 @@ class DatabaseService:
             message=f"Database error during {context}: {e}",
             user_message="Database error. Please contact support."
         )
-
 
     @staticmethod
     def _handle_connection_error(e):
