@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.api.exception_handlers import register_exception_handlers
 from src.api.routes import create_routes
 from src.core.config import Config
+from src.core.logger_config import configure_logging
 from src.db.db_service import DatabaseService
 from src.engines.decision_engine import DecisionEngine
 from src.engines.predictive_engine import PredictiveEngine
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    configure_logging()
     config = Config()
     db = DatabaseService(config)
     db.connect()

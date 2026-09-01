@@ -4,9 +4,12 @@ from src.etl.extract.json_extractor import JSONExtractor
 from src.etl.load.db_loader import DBLoader
 from src.etl.extract.json_loader import JsonLoader
 from src.core.paths import data_path
+from src.core.logger_config import configure_logging
+
 
 
 def main():
+    configure_logging()
     confirm = input("This will DROP and recreate database tables. Type RESET to continue: ")
 
     if confirm != "RESET":

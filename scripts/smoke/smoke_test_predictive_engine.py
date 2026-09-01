@@ -2,9 +2,12 @@ from src.core.config import Config
 from src.db.db_service import DatabaseService
 from src.engines.predictive_engine import PredictiveEngine
 from src.repositories.data_repository import DataRepository
+from src.core.logger_config import configure_logging
+
 
 
 def main():
+    configure_logging()
     db = DatabaseService(Config())
     db.connect()
 

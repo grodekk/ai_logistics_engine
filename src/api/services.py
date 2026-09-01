@@ -1,5 +1,5 @@
-from src.api.exception_handlers import BusinessLogicError
 from src.api.schemas import (RouteInput, RatesResponse, RouteRateResponse, SummaryStats, ClientScoreResponse)
+from src.core.exceptions import BusinessLogicError
 from src.engines.decision_engine import DecisionEngine
 from src.engines.predictive_engine import PredictiveEngine
 from src.repositories.analytics_repository import AnalyticsRepository

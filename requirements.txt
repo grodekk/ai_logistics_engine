@@ -6,3 +6,4 @@ fastapi
 pydantic
 uvicorn[standard]
 starlette==0.31.1
+dotenv
