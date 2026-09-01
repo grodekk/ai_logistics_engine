@@ -1,5 +1,7 @@
-from pydantic import BaseModel, conint
 from typing import List
+
+from pydantic import BaseModel, conint
+
 
 class RouteInput(BaseModel):
     route_name: str

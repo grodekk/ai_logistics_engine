@@ -1,11 +1,10 @@
 from src.core.config import Config
+from src.core.logger_config import configure_logging
+from src.core.paths import data_path
 from src.db.db_service import DatabaseService
 from src.etl.extract.json_extractor import JSONExtractor
-from src.etl.load.db_loader import DBLoader
 from src.etl.extract.json_loader import JsonLoader
-from src.core.paths import data_path
-from src.core.logger_config import configure_logging
-
+from src.etl.load.db_loader import DBLoader
 
 
 def main():
@@ -24,9 +23,7 @@ def main():
 
     try:
         db_service.connect()
-        db_service.execute(
-            "DROP TABLE IF EXISTS routes_costs, monthly_costs, clients, clients_routes CASCADE"
-        )
+        db_service.execute("DROP TABLE IF EXISTS routes_costs, monthly_costs, clients, clients_routes CASCADE")
         db_service.create_tables()
         db_service.create_views()
 

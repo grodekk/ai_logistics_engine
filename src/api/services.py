@@ -1,4 +1,4 @@
-from src.api.schemas import (RouteInput, RatesResponse, RouteRateResponse, SummaryStats, ClientScoreResponse)
+from src.api.schemas import ClientScoreResponse, RatesResponse, RouteInput, RouteRateResponse, SummaryStats
 from src.core.exceptions import BusinessLogicError
 from src.engines.decision_engine import DecisionEngine
 from src.engines.predictive_engine import PredictiveEngine
@@ -19,8 +19,7 @@ class RouteService:
 
     def calculate_rates(self, routes: list[RouteInput], monthly_profit_target: float) -> RatesResponse:
         result = self.decision_engine.calculate_rates_for_routes(
-            routes_info=[r.model_dump() for r in routes],
-            monthly_profit_target=monthly_profit_target
+            routes_info=[r.model_dump() for r in routes], monthly_profit_target=monthly_profit_target
         )
 
         route_rows = result["df"].to_dict(orient="records")
@@ -33,7 +32,7 @@ class RouteService:
                 total_trips=result["total_trips"],
                 total_route_costs=result["total_route_costs"],
                 total_monthly_costs=result["total_monthly_costs"],
-            )
+            ),
         )
 
         return rates_response

@@ -1,10 +1,11 @@
 import logging
+
 import psycopg2
 from psycopg2 import sql
-from src.core.exceptions import InfrastructureError
-from src.db.sql_loader import SQLLoader
-from src.core.paths import SQL_DIR
 
+from src.core.exceptions import InfrastructureError
+from src.core.paths import SQL_DIR
+from src.db.sql_loader import SQLLoader
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +77,7 @@ class DatabaseService:
                 logger.error(f"[tables] SQL execution error: {e}")
                 raise InfrastructureError(
                     message=f"Error executing SQL for tables: {e}",
-                    user_message="Error setting up tables. Please contact support."
+                    user_message="Error setting up tables. Please contact support.",
                 )
 
     def create_views(self):
@@ -90,7 +91,7 @@ class DatabaseService:
                 logger.error(f"[views] SQL execution error: {e}")
                 raise InfrastructureError(
                     message=f"Error executing SQL for views: {e}",
-                    user_message="Error setting up views. Please contact support."
+                    user_message="Error setting up views. Please contact support.",
                 )
 
     def bulk_insert(self, table, columns, values):
@@ -111,11 +112,9 @@ class DatabaseService:
 
     @staticmethod
     def _build_insert_query(table, columns):
-        placeholders = ', '.join(['%s'] * len(columns))
+        placeholders = ", ".join(["%s"] * len(columns))
         return sql.SQL("INSERT INTO {} ({}) VALUES ({})").format(
-            sql.Identifier(table),
-            sql.SQL(', ').join(map(sql.Identifier, columns)),
-            sql.SQL(placeholders)
+            sql.Identifier(table), sql.SQL(", ").join(map(sql.Identifier, columns)), sql.SQL(placeholders)
         )
 
     @staticmethod
@@ -126,14 +125,12 @@ class DatabaseService:
         self.conn.rollback() if self.conn else None
         logger.error(f"Database error during {context}: {e}")
         raise InfrastructureError(
-            message=f"Database error during {context}: {e}",
-            user_message="Database error. Please contact support."
+            message=f"Database error during {context}: {e}", user_message="Database error. Please contact support."
         )
 
     @staticmethod
     def _handle_connection_error(e):
         logger.error(f"Connection error: {e}")
         raise InfrastructureError(
-            message=f"Connection closed: {e}",
-            user_message="Database connection lost. Please try again."
+            message=f"Connection closed: {e}", user_message="Database connection lost. Please try again."
         )

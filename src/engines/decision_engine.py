@@ -28,7 +28,7 @@ class DecisionEngine:
             "avg_rate": avg_rate,
             "total_monthly_costs": total_fixed_costs,
             "total_route_costs": total_route_costs,
-            "total_trips": total_trips
+            "total_trips": total_trips,
         }
 
     def _attach_route_costs(self, df):

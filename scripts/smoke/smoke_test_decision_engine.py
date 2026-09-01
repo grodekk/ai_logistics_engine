@@ -1,9 +1,8 @@
 from src.core.config import Config
+from src.core.logger_config import configure_logging
 from src.db.db_service import DatabaseService
 from src.engines.decision_engine import DecisionEngine
 from src.repositories.data_repository import DataRepository
-from src.core.logger_config import configure_logging
-
 
 
 def main():

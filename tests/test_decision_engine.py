@@ -1,15 +1,18 @@
 import pandas as pd
 import pytest
+
 from src.engines.decision_engine import DecisionEngine
 
 
 class FakeDataRepository:
     @staticmethod
     def get_route_costs_total():
-        return pd.DataFrame([
-            {"route_name": "Warsaw - Berlin", "total_route_cost": 1000},
-            {"route_name": "Paris - London", "total_route_cost": 2000},
-        ])
+        return pd.DataFrame(
+            [
+                {"route_name": "Warsaw - Berlin", "total_route_cost": 1000},
+                {"route_name": "Paris - London", "total_route_cost": 2000},
+            ]
+        )
 
     @staticmethod
     def get_fixed_costs_total():

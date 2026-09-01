@@ -1,9 +1,10 @@
 import json
+from typing import Any, Dict, List
+
 from src.core.exceptions import JsonFileNotFound, JsonParseError
-from typing import List, Dict, Any
+
 
 class JsonLoader:
-
     @staticmethod
     def load(filepath) -> List[Dict[str, Any]]:
         """Load JSON data and validate it is a non-empty list of dicts."""

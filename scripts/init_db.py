@@ -1,6 +1,6 @@
 from src.core.config import Config
-from src.db.db_service import DatabaseService
 from src.core.logger_config import configure_logging
+from src.db.db_service import DatabaseService
 
 
 def main():

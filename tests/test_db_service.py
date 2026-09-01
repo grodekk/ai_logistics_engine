@@ -1,8 +1,10 @@
-import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
+
 import psycopg2
-from src.db.db_service import DatabaseService
+import pytest
+
 from src.core.exceptions import InfrastructureError
+from src.db.db_service import DatabaseService
 
 
 @pytest.fixture
@@ -26,8 +28,9 @@ def db(config):
 
 # ---------- CONNECT ---------- #
 
+
 def test_connect_success(config):
-    with patch('src.db.db_service.psycopg2.connect', return_value=MagicMock()) as mock_connect:
+    with patch("src.db.db_service.psycopg2.connect", return_value=MagicMock()) as mock_connect:
         db = DatabaseService(config)
         db.connect()
 
@@ -36,7 +39,7 @@ def test_connect_success(config):
 
 
 def test_connect_failure(config):
-    with patch('src.db.db_service.psycopg2.connect', side_effect=psycopg2.Error("Fail")):
+    with patch("src.db.db_service.psycopg2.connect", side_effect=psycopg2.Error("Fail")):
         db = DatabaseService(config)
 
         with pytest.raises(InfrastructureError):
@@ -45,12 +48,14 @@ def test_connect_failure(config):
 
 # ---------- DISCONNECT ---------- #
 
+
 def test_disconnect(db):
     db.disconnect()
     db.conn.close.assert_called_once()
 
 
 # ---------- EXECUTE ---------- #
+
 
 def test_execute_success_without_params(db):
     db.execute("SELECT 1")
@@ -80,6 +85,7 @@ def test_execute_failure(db):
 
 # ---------- FETCH_ALL ---------- #
 
+
 def test_fetch_all_success(db):
     expected = [("row1",), ("row2",)]
     db.conn.cursor().__enter__().fetchall.return_value = expected
@@ -90,6 +96,7 @@ def test_fetch_all_success(db):
 
 
 # ---------- BULK_INSERT ---------- #
+
 
 def test_bulk_insert_success(db):
     db.bulk_insert("test_table", ["col1", "col2"], [(1, 2), (3, 4)])

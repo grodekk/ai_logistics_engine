@@ -1,5 +1,5 @@
-from contextlib import asynccontextmanager
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,7 +13,6 @@ from src.engines.decision_engine import DecisionEngine
 from src.engines.predictive_engine import PredictiveEngine
 from src.repositories.analytics_repository import AnalyticsRepository
 from src.repositories.data_repository import DataRepository
-
 
 logger = logging.getLogger(__name__)
 

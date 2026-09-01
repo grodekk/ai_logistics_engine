@@ -7,14 +7,9 @@ class PredictiveEngine:
         df_clients = self._apply_class_bonus(df_clients)
         df_clients = self._compute_scores(df_clients)
         df_clients = self._clip_scores(df_clients)
-        return df_clients[[
-            "client_name",
-            "client_class",
-            "avg_payment_delay_days",
-            "late_payment_count",
-            "total_shipments",
-            "score"
-        ]]
+        return df_clients[
+            ["client_name", "client_class", "avg_payment_delay_days", "late_payment_count", "total_shipments", "score"]
+        ]
 
     @staticmethod
     def _apply_class_bonus(df):
@@ -24,12 +19,7 @@ class PredictiveEngine:
 
     @staticmethod
     def _compute_scores(df):
-        df["score"] = (
-                100
-                - df["avg_payment_delay_days"] * 2
-                - df["late_payment_count"] * 5
-                + df["class_bonus"]
-        )
+        df["score"] = 100 - df["avg_payment_delay_days"] * 2 - df["late_payment_count"] * 5 + df["class_bonus"]
 
         return df
 
