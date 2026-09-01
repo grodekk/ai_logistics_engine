@@ -1,9 +1,8 @@
 pandas
 numpy
 psycopg2-binary
-pytest
+pytest>=9.0.3,<10
 fastapi
 pydantic
 uvicorn[standard]
-starlette==0.31.1
-dotenv
+python-dotenv>=1.2.2,<2
