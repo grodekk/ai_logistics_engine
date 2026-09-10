@@ -23,7 +23,7 @@ The client scoring model is currently deterministic. Machine learning is planned
 ## Tech Stack
 
 - **Backend:** Python, FastAPI, Pydantic, pandas
-- **Database:** PostgreSQL, psycopg2
+- **Database:** PostgreSQL, Psycopg 3, async connection pooling
 - **Testing:** pytest
 - **Frontend:** React, Vite, Tailwind CSS
 

@@ -1,7 +1,9 @@
 pandas
 numpy
-psycopg2-binary
+psycopg[binary]
+psycopg-pool
 pytest>=9.0.3,<10
+pytest-asyncio
 fastapi
 pydantic
 uvicorn[standard]

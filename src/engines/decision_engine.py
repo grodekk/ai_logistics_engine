@@ -5,13 +5,13 @@ class DecisionEngine:
     def __init__(self, data_repository):
         self.data_repository = data_repository
 
-    def calculate_rates_for_routes(self, routes_info, monthly_profit_target):
+    async def calculate_rates_for_routes(self, routes_info, monthly_profit_target):
         df = self._prepare_routes_dataframe(routes_info)
-        df = self._attach_route_costs(df)
+        df = await self._attach_route_costs(df)
 
         self._validate_routes(df)
 
-        total_fixed_costs = self._get_fixed_costs_total()
+        total_fixed_costs = await self._get_fixed_costs_total()
         total_route_costs = self._get_total_route_costs(df)
         total_trips = self._get_total_trips(df)
 
@@ -31,13 +31,13 @@ class DecisionEngine:
             "total_trips": total_trips,
         }
 
-    def _attach_route_costs(self, df):
-        route_costs = self.data_repository.get_route_costs_total()
+    async def _attach_route_costs(self, df):
+        route_costs = await self.data_repository.get_route_costs_total()
 
         return df.merge(route_costs, on="route_name", how="left")
 
-    def _get_fixed_costs_total(self):
-        return self.data_repository.get_fixed_costs_total()
+    async def _get_fixed_costs_total(self):
+        return await self.data_repository.get_fixed_costs_total()
 
     @staticmethod
     def _validate_routes(df):
