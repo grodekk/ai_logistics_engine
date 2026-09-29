@@ -1,3 +1,6 @@
+import asyncio
+import selectors
+
 from src.core.config import Config
 from src.core.logger_config import configure_logging
 from src.db.db_service import DatabaseService
@@ -5,12 +8,13 @@ from src.engines.decision_engine import DecisionEngine
 from src.repositories.data_repository import DataRepository
 
 
-def main():
+async def main():
     configure_logging()
     db = DatabaseService(Config())
-    db.connect()
 
     try:
+        await db.connect()
+
         data_repository = DataRepository(db)
         engine = DecisionEngine(data_repository)
 
@@ -19,7 +23,7 @@ def main():
             {"route_name": "Paris - London", "monthly_trips": 1},
         ]
 
-        result = engine.calculate_rates_for_routes(
+        result = await engine.calculate_rates_for_routes(
             routes_info=routes_info,
             monthly_profit_target=10000,
         )
@@ -33,8 +37,12 @@ def main():
         print("\n=================================\n")
 
     finally:
-        db.disconnect()
+        await db.disconnect()
+
+
+def create_event_loop():
+    return asyncio.SelectorEventLoop(selectors.SelectSelector())
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main(), loop_factory=create_event_loop)

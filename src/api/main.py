@@ -22,26 +22,27 @@ async def lifespan(app: FastAPI):
     configure_logging()
     config = Config()
     db = DatabaseService(config)
-    db.connect()
-
-    data_repository = DataRepository(db)
-    analytics_repository = AnalyticsRepository(db)
-    decision_engine = DecisionEngine(data_repository)
-    predictive_engine = PredictiveEngine(data_repository)
-
-    app.state.db = db
-    app.state.data_repository = data_repository
-    app.state.analytics_repository = analytics_repository
-    app.state.decision_engine = decision_engine
-    app.state.predictive_engine = predictive_engine
 
     try:
+        await db.connect()
+
+        data_repository = DataRepository(db)
+        analytics_repository = AnalyticsRepository(db)
+        decision_engine = DecisionEngine(data_repository)
+        predictive_engine = PredictiveEngine(data_repository)
+
+        app.state.db = db
+        app.state.data_repository = data_repository
+        app.state.analytics_repository = analytics_repository
+        app.state.decision_engine = decision_engine
+        app.state.predictive_engine = predictive_engine
+
         logger.info("Application ready")
         yield
 
     finally:
         logger.info("Application shutting down")
-        db.disconnect()
+        await db.disconnect()
         logger.info("Shutdown complete")
 
 

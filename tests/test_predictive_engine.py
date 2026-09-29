@@ -1,11 +1,12 @@
 import pandas as pd
+import pytest
 
 from src.engines.predictive_engine import PredictiveEngine
 
 
 class FakeDataRepository:
     @staticmethod
-    def get_clients():
+    async def get_clients():
         clients = [
             {
                 "client_name": "Client A",
@@ -28,7 +29,7 @@ class FakeDataRepository:
 
 class EdgeCaseDataRepository:
     @staticmethod
-    def get_clients():
+    async def get_clients():
         clients = [
             {
                 "client_name": "Perfect Client",
@@ -49,13 +50,12 @@ class EdgeCaseDataRepository:
         return pd.DataFrame(clients)
 
 
-def test_calculate_client_scores():
+@pytest.mark.asyncio
+async def test_calculate_client_scores():
     engine = PredictiveEngine(FakeDataRepository())
 
-    result = engine.calculate_client_scores()
-
-    client_a_score = result.loc[result["client_name"] == "Client A", "score"].iloc[0]
-    client_b_score = result.loc[result["client_name"] == "Client B", "score"].iloc[0]
+    result = await engine.calculate_client_scores()
+    scores = result.set_index("client_name")["score"]
 
     expected_columns = [
         "client_name",
@@ -67,17 +67,16 @@ def test_calculate_client_scores():
     ]
 
     assert list(result.columns) == expected_columns
-    assert client_a_score == 100
-    assert client_b_score == 80
+    assert scores["Client A"] == 100
+    assert scores["Client B"] == 80
 
 
-def test_calculate_client_scores_clips_values_to_valid_range():
+@pytest.mark.asyncio
+async def test_calculate_client_scores_clips_values_to_valid_range():
     engine = PredictiveEngine(EdgeCaseDataRepository())
 
-    result = engine.calculate_client_scores()
+    result = await engine.calculate_client_scores()
+    scores = result.set_index("client_name")["score"]
 
-    perfect_client_score = result.loc[result["client_name"] == "Perfect Client", "score"].iloc[0]
-    risky_client_score = result.loc[result["client_name"] == "Risky Client", "score"].iloc[0]
-
-    assert perfect_client_score == 100
-    assert risky_client_score == 0
+    assert scores["Perfect Client"] == 100
+    assert scores["Risky Client"] == 0

@@ -2,8 +2,8 @@ class PredictiveEngine:
     def __init__(self, data_processing):
         self.dp = data_processing
 
-    def calculate_client_scores(self):
-        df_clients = self.dp.get_clients()
+    async def calculate_client_scores(self):
+        df_clients = await self.dp.get_clients()
         df_clients = self._apply_class_bonus(df_clients)
         df_clients = self._compute_scores(df_clients)
         df_clients = self._clip_scores(df_clients)

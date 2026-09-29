@@ -1,6 +1,6 @@
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock
 
-import psycopg2
+import psycopg
 import pytest
 
 from src.core.exceptions import InfrastructureError
@@ -21,100 +21,153 @@ def config():
 @pytest.fixture
 def db(config):
     service = DatabaseService(config)
-    service.conn = MagicMock()
-    service.conn.closed = 0
-    return service
+
+    pool = MagicMock()
+    connection = MagicMock()
+    cursor = MagicMock()
+
+    connection_context = MagicMock()
+    connection_context.__aenter__ = AsyncMock(return_value=connection)
+    connection_context.__aexit__ = AsyncMock(return_value=False)
+    pool.connection.return_value = connection_context
+
+    cursor_context = MagicMock()
+    cursor_context.__aenter__ = AsyncMock(return_value=cursor)
+    cursor_context.__aexit__ = AsyncMock(return_value=False)
+    connection.cursor.return_value = cursor_context
+
+    pool.open = AsyncMock()
+    pool.close = AsyncMock()
+
+    cursor.execute = AsyncMock()
+    cursor.fetchall = AsyncMock()
+    cursor.executemany = AsyncMock()
+
+    service.pool = pool
+
+    return service, pool, cursor
 
 
 # ---------- CONNECT ---------- #
 
 
-def test_connect_success(config):
-    with patch("src.db.db_service.psycopg2.connect", return_value=MagicMock()) as mock_connect:
-        db = DatabaseService(config)
-        db.connect()
+@pytest.mark.asyncio
+async def test_connect_success(db):
+    service, pool, _ = db
 
-        assert db.conn is not None
-        mock_connect.assert_called_once()
+    await service.connect()
+
+    pool.open.assert_awaited_once_with(wait=True)
 
 
-def test_connect_failure(config):
-    with patch("src.db.db_service.psycopg2.connect", side_effect=psycopg2.Error("Fail")):
-        db = DatabaseService(config)
+@pytest.mark.asyncio
+async def test_connect_failure(db):
+    service, pool, _ = db
+    pool.open.side_effect = psycopg.Error("Fail")
 
-        with pytest.raises(InfrastructureError):
-            db.connect()
+    with pytest.raises(InfrastructureError):
+        await service.connect()
 
 
 # ---------- DISCONNECT ---------- #
 
 
-def test_disconnect(db):
-    db.disconnect()
-    db.conn.close.assert_called_once()
+@pytest.mark.asyncio
+async def test_disconnect(db):
+    service, pool, _ = db
+
+    await service.disconnect()
+
+    pool.close.assert_awaited_once_with()
 
 
 # ---------- EXECUTE ---------- #
 
 
-def test_execute_success_without_params(db):
-    db.execute("SELECT 1")
+@pytest.mark.asyncio
+async def test_execute_success_without_params(db):
+    service, _, cursor = db
 
-    db.conn.cursor().__enter__().execute.assert_called_once()
-    db.conn.commit.assert_called_once()
+    await service.execute("SELECT 1")
+
+    cursor.execute.assert_awaited_once_with("SELECT 1", None)
 
 
-def test_execute_success_with_params(db):
+@pytest.mark.asyncio
+async def test_execute_success_with_params(db):
+    service, _, cursor = db
     query = "INSERT INTO test_table (id) VALUES (%s)"
     params = (1,)
 
-    db.execute(query, params)
+    await service.execute(query, params)
 
-    db.conn.cursor().__enter__().execute.assert_called_once_with(query, params)
-    db.conn.commit.assert_called_once()
+    cursor.execute.assert_awaited_once_with(query, params)
 
 
-def test_execute_failure(db):
-    db.conn.cursor().__enter__().execute.side_effect = psycopg2.Error("SQL error")
+@pytest.mark.asyncio
+async def test_execute_failure(db):
+    service, _, cursor = db
+    cursor.execute.side_effect = psycopg.Error("SQL error")
 
-    with pytest.raises(InfrastructureError):
-        db.execute("BAD SQL")
+    with pytest.raises(InfrastructureError) as error:
+        await service.execute("BAD SQL")
 
-    db.conn.rollback.assert_called_once()
+    assert isinstance(error.value.__cause__, psycopg.Error)
 
 
 # ---------- FETCH_ALL ---------- #
 
 
-def test_fetch_all_success(db):
+@pytest.mark.asyncio
+async def test_fetch_all_success(db):
+    service, _, cursor = db
     expected = [("row1",), ("row2",)]
-    db.conn.cursor().__enter__().fetchall.return_value = expected
+    cursor.fetchall.return_value = expected
 
-    result = db.fetch_all("SELECT * FROM test")
+    result = await service.fetch_all("SELECT * FROM test")
 
     assert result == expected
+    cursor.execute.assert_awaited_once_with("SELECT * FROM test", None)
+    cursor.fetchall.assert_awaited_once_with()
 
 
 # ---------- BULK_INSERT ---------- #
 
 
-def test_bulk_insert_success(db):
-    db.bulk_insert("test_table", ["col1", "col2"], [(1, 2), (3, 4)])
+@pytest.mark.asyncio
+async def test_bulk_insert_success(db):
+    service, _, cursor = db
+    values = [(1, 2), (3, 4)]
 
-    db.conn.cursor().__enter__().executemany.assert_called_once()
-    db.conn.commit.assert_called_once()
+    await service.bulk_insert(
+        "test_table",
+        ["col1", "col2"],
+        values,
+    )
+
+    cursor.executemany.assert_awaited_once()
+    query, passed_values = cursor.executemany.await_args.args
+
+    assert passed_values == values
+    assert isinstance(query, psycopg.sql.Composed)
 
 
-def test_bulk_insert_empty(db):
-    db.bulk_insert("test_table", ["col1"], [])
+@pytest.mark.asyncio
+async def test_bulk_insert_empty(db):
+    service, pool, cursor = db
 
-    db.conn.cursor().__enter__().executemany.assert_not_called()
+    await service.bulk_insert("test_table", ["col1"], [])
+
+    pool.connection.assert_not_called()
+    cursor.executemany.assert_not_awaited()
 
 
-def test_bulk_insert_exception(db):
-    db.conn.cursor().__enter__().executemany.side_effect = psycopg2.Error("Fail")
+@pytest.mark.asyncio
+async def test_bulk_insert_exception(db):
+    service, _, cursor = db
+    cursor.executemany.side_effect = psycopg.Error("Fail")
 
-    with pytest.raises(InfrastructureError):
-        db.bulk_insert("test_table", ["col1"], [(1,)])
+    with pytest.raises(InfrastructureError) as error:
+        await service.bulk_insert("test_table", ["col1"], [(1,)])
 
-    db.conn.rollback.assert_called_once()
+    assert isinstance(error.value.__cause__, psycopg.Error)
