@@ -3,7 +3,6 @@ import json
 import subprocess
 from pathlib import Path
 
-
 ENDPOINTS = [
     "/health",
     "/routes/available",
