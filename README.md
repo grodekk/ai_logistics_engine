@@ -18,14 +18,14 @@ dashboard.
 - JSON data import for local development,
 - automated tests and database smoke checks.
 
-The client scoring model is currently deterministic. Machine learning is planned
+The client scoring model is currently deterministic. Machine learning is planned.
 
 ## Tech Stack
 
 - **Backend:** Python, FastAPI, Pydantic, pandas
 - **Database:** PostgreSQL, Psycopg 3, async connection pooling
 - **Testing:** pytest
-- **Frontend:** React, Vite, Tailwind CSS
+- **Frontend:** React, Vite, Tailwind CSS *(dashboard currently being rebuilt)*
 
 ## Structure
 
@@ -41,20 +41,36 @@ src/
 
 scripts/              # Database and smoke-test utilities
 tests/                # Automated tests
+benchmarks/           # API performance benchmarks and analysis
 data/                 # Sample logistics data
 frontend/             # React dashboard
 ```
+
+## Performance Benchmarks
+
+The synchronous and asynchronous database implementations were compared using `oha`
+across multiple API endpoints and concurrency levels.
+
+The results show workload-dependent performance improvements. Async database access
+improved throughput for several endpoints under concurrent load, while simpler
+workloads showed little benefit or performed better synchronously.
+
+Detailed benchmark results, throughput and p95 latency charts, and the Jupyter analysis
+are available in `benchmarks/`.
 
 ## Run Locally
 
 Configure the PostgreSQL connection in `.env`, then run:
 
 ```bash
-python -m venv venv
+python -m venv .venv
 python -m pip install -r requirements.txt
 python -m scripts.init_db
-uvicorn src.api.main:app --reload
+python run_server.py
 ```
+
+On Windows, `run_server.py` uses `SelectorEventLoop` for compatibility with the
+asynchronous Psycopg connection pool.
 
 To recreate the tables and load sample data for local development:
 
